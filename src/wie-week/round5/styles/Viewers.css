@@ -1,0 +1,690 @@
+/* ── Viewers.css — styles for all four detail viewers ───────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TASK HISTORY VIEWER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.thv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.7rem, 1.2vw, 0.82rem);
+}
+
+.thv-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: #5a6c7f;
+  font-weight: 600;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+}
+
+.thv-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #c8d6e5;
+}
+
+.thv-table tr:hover td {
+  background: rgba(0, 212, 255, 0.04);
+}
+
+.thv-suspicious td {
+  color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.06) !important;
+}
+
+.thv-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.thv-status.completed {
+  background: rgba(0, 221, 85, 0.12);
+  color: #00dd55;
+}
+
+.thv-status.pending {
+  background: rgba(255, 193, 7, 0.12);
+  color: #ffc107;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PERSONAL PROFILE VIEWER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ppv-root {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+}
+
+/* Left column — avatar + stats */
+.ppv-left {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ppv-avatar-card {
+  background: #0d1220;
+  border: 1px solid rgba(255, 50, 50, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.ppv-online-dot {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.55rem;
+  color: #00dd55;
+}
+
+.ppv-online-dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00dd55;
+  box-shadow: 0 0 8px #00dd55;
+}
+
+.ppv-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+}
+
+.ppv-avatar-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: #e8eaf6;
+  margin-bottom: 2px;
+}
+
+.ppv-avatar-role {
+  font-size: 0.65rem;
+  color: #5a6c7f;
+}
+
+/* Level & XP card */
+.ppv-level-card {
+  background: #0d1220;
+  border: 1px solid rgba(255, 50, 50, 0.15);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ppv-level-num {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  color: #e8eaf6;
+  background: rgba(255, 50, 50, 0.1);
+  border: 1px solid rgba(255, 50, 50, 0.25);
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ppv-level-info {
+  flex: 1;
+}
+
+.ppv-level-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #5a6c7f;
+  margin-bottom: 4px;
+}
+
+.ppv-xp-bar {
+  height: 6px;
+  background: #1a2040;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.ppv-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff4444, #ff6b6b);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.ppv-xp-text {
+  font-size: 0.6rem;
+  color: #5a6c7f;
+}
+
+/* Rating card */
+.ppv-rating-card {
+  background: #0d1220;
+  border: 1px solid rgba(255, 50, 50, 0.15);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ppv-rating-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #ff4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.ppv-rating-info {
+  flex: 1;
+}
+
+.ppv-rating-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #5a6c7f;
+  margin-bottom: 2px;
+}
+
+.ppv-rating-value {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1rem;
+  color: #e8eaf6;
+}
+
+.ppv-rating-pct {
+  font-size: 0.6rem;
+  color: #5a6c7f;
+  margin-top: 2px;
+}
+
+/* Right column — info & stats */
+.ppv-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ppv-section-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #ff6b6b;
+  margin-bottom: 4px;
+}
+
+.ppv-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(0.7rem, 1.8vw, 1rem);
+  color: #e8eaf6;
+  margin: 0 0 2px;
+}
+
+.ppv-name-role {
+  font-size: 0.75rem;
+  color: #5a6c7f;
+  display: inline;
+  margin-left: 8px;
+}
+
+/* Info table */
+.ppv-info-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ppv-info-table td {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
+}
+
+.ppv-info-table td:first-child {
+  color: #5a6c7f;
+  font-weight: 500;
+  width: 40%;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
+.ppv-info-table td:last-child {
+  color: #c8d6e5;
+}
+
+.ppv-suspicious-val {
+  color: #ff6b6b !important;
+  font-weight: 700;
+}
+
+/* Game stats */
+.ppv-game-stats {
+  background: #0d1220;
+  border: 1px solid rgba(255, 50, 50, 0.12);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.ppv-game-stats-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  color: #ff6b6b;
+  margin-bottom: 12px;
+  letter-spacing: 0.08em;
+}
+
+.ppv-game-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  text-align: center;
+}
+
+.ppv-stat-value {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  color: #e8eaf6;
+}
+
+.ppv-stat-label {
+  font-size: 0.6rem;
+  color: #5a6c7f;
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MESSAGE HISTORY VIEWER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.mhv-root {
+  display: flex;
+  height: 100%;
+  min-height: 400px;
+  gap: 16px;
+}
+
+/* Contact list panel */
+.mhv-contacts {
+  width: clamp(180px, 30%, 260px);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.mhv-search {
+  padding: 10px;
+}
+
+.mhv-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 212, 255, 0.05);
+  color: #c8d6e5;
+  font-size: 0.75rem;
+  outline: none;
+}
+
+.mhv-search input:focus {
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.mhv-contact-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.mhv-contact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  width: 100%;
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.mhv-contact:hover {
+  background: rgba(0, 212, 255, 0.06);
+}
+
+.mhv-contact.active {
+  background: rgba(0, 212, 255, 0.12);
+}
+
+.mhv-contact-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.mhv-contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mhv-contact-name {
+  font-size: 0.72rem;
+  color: #e8eaf6;
+  font-weight: 500;
+}
+
+.mhv-contact-preview {
+  font-size: 0.62rem;
+  color: #5a6c7f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mhv-contact-time {
+  font-size: 0.58rem;
+  color: #5a6c7f;
+  flex-shrink: 0;
+}
+
+/* Chat panel */
+.mhv-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.mhv-chat-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mhv-chat-header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  background: #1a2535;
+}
+
+.mhv-chat-header-name {
+  font-size: 0.82rem;
+  color: #e8eaf6;
+  font-weight: 600;
+}
+
+.mhv-chat-header-sub {
+  font-size: 0.62rem;
+  color: #5a6c7f;
+}
+
+.mhv-chat-date {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.62rem;
+  color: #5a6c7f;
+}
+
+.mhv-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mhv-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 80%;
+}
+
+.mhv-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}
+
+.mhv-msg-bubble {
+  padding: 8px 40px 8px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  position: relative;
+}
+
+.mhv-msg-bubble .mhv-msg-sender {
+  font-size: 0.62rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.mhv-msg-bubble .mhv-msg-time {
+  font-size: 0.55rem;
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  opacity: 0.7;
+}
+
+/* Normal message colors based on sender */
+.mhv-msg-normal .mhv-msg-bubble {
+  background: rgba(255, 255, 255, 0.06);
+  color: #c8d6e5;
+}
+
+/* Suspicious message */
+.mhv-msg-suspicious .mhv-msg-bubble {
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+  color: #ff6b6b;
+}
+
+.mhv-msg-suspicious .mhv-msg-sender {
+  color: #ff6b6b;
+}
+
+/* Chat input (decorative) */
+.mhv-chat-input {
+  padding: 10px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mhv-chat-input input {
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 212, 255, 0.03);
+  color: #5a6c7f;
+  font-size: 0.75rem;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESS LOG VIEWER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.alv-container {
+  font-family: 'Space Grotesk', monospace;
+}
+
+.alv-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.alv-entry.alv-suspicious {
+  background: rgba(255, 107, 107, 0.06);
+  border-left: 3px solid #ff6b6b;
+  padding-left: 10px;
+  border-radius: 4px;
+}
+
+.alv-timestamp {
+  font-size: 0.68rem;
+  color: #5a6c7f;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 130px;
+}
+
+.alv-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.alv-badge.info {
+  background: rgba(0, 212, 255, 0.12);
+  color: #00d4ff;
+}
+
+.alv-badge.warning {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.alv-badge.critical {
+  background: rgba(255, 60, 60, 0.15);
+  color: #ff4444;
+  animation: alv-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes alv-blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.alv-action {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #c8d6e5;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.alv-detail {
+  flex: 1;
+  font-size: 0.72rem;
+  color: #8a96a8;
+}
+
+.alv-location {
+  font-size: 0.65rem;
+  color: #5a6c7f;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — Viewer breakpoints
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .ppv-root {
+    grid-template-columns: 1fr;
+  }
+
+  .mhv-root {
+    flex-direction: column;
+  }
+
+  .mhv-contacts {
+    width: 100%;
+    max-height: 200px;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  }
+
+  .alv-entry {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .alv-timestamp {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ppv-game-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .thv-table {
+    font-size: 0.68rem;
+  }
+
+  .thv-table th,
+  .thv-table td {
+    padding: 6px 8px;
+  }
+}

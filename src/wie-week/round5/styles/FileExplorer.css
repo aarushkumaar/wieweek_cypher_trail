@@ -1,0 +1,141 @@
+/* ── FileExplorer.css ────────────────────────────────────────────────────── */
+
+.fe-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  color: #222;
+  font-size: clamp(0.75rem, 1.4vw, 0.88rem);
+}
+
+/* Breadcrumb bar */
+.fe-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #ccc;
+  font-size: clamp(0.72rem, 1.3vw, 0.85rem);
+  color: #444;
+  flex-wrap: wrap;
+}
+
+.fe-breadcrumb-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.fe-breadcrumb-sep {
+  color: #999;
+  margin: 0 2px;
+}
+
+/* Column headers */
+.fe-header {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 0.6fr;
+  gap: 4px;
+  padding: 6px 14px;
+  border-bottom: 1px solid #ccc;
+  font-size: clamp(0.7rem, 1.2vw, 0.82rem);
+  color: #555;
+  font-weight: 500;
+  align-items: center;
+}
+
+.fe-header-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fe-header-check {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #888;
+  border-radius: 2px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* File list */
+.fe-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.fe-row {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 0.6fr;
+  gap: 4px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.15s;
+  align-items: center;
+}
+
+.fe-row:hover {
+  background: #f0f4ff;
+}
+
+.fe-row.is-disabled {
+  cursor: default;
+  opacity: 0.75;
+  background: #f7f7f7;
+}
+
+.fe-row.is-disabled:hover {
+  background: #f7f7f7;
+}
+
+.fe-row-name {
+  font-weight: 500;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.fe-row-date,
+.fe-row-type,
+.fe-row-size {
+  color: #666;
+  font-size: clamp(0.68rem, 1.1vw, 0.8rem);
+}
+
+/* Separator lines between columns */
+.fe-header-cell:not(:first-child),
+.fe-row>span:not(:first-child) {
+  border-left: 1px solid #ddd;
+  padding-left: 8px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+
+  .fe-header,
+  .fe-row {
+    grid-template-columns: 1.5fr 1fr 0.8fr 0.6fr;
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 420px) {
+
+  /* Hide size on very small screens */
+  .fe-header-cell:nth-child(4),
+  .fe-row>span:nth-child(4) {
+    display: none;
+  }
+
+  .fe-header,
+  .fe-row {
+    grid-template-columns: 1.5fr 1fr 0.8fr;
+  }
+}

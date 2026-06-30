@@ -1,0 +1,456 @@
+/* ── RoundGuidelines — shared styles ─────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600&display=swap');
+
+:root {
+  --rg-accent: #38fedc;
+}
+
+.rg-root {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: #04050f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* ── Starfield ── */
+.rg-stars {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.rg-star {
+  position: absolute;
+  border-radius: 9999px;
+  background: #fff;
+  opacity: 0.7;
+  min-width: 1px;
+  min-height: 1px;
+  animation: rg-twinkle 6s ease-in-out infinite;
+}
+
+@keyframes rg-twinkle {
+
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+/* ── Crewmates ── */
+.rg-crewmates {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.rg-crew {
+  position: absolute;
+  height: auto;
+  opacity: 0.55;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.7));
+  image-rendering: pixelated;
+}
+
+@keyframes rg-float-a {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-7deg);
+  }
+
+  25% {
+    transform: translate(4%, -6%) rotate(4deg);
+  }
+
+  50% {
+    transform: translate(-3%, 5%) rotate(-3deg);
+  }
+
+  75% {
+    transform: translate(5%, 2%) rotate(6deg);
+  }
+}
+
+@keyframes rg-float-b {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(5deg);
+  }
+
+  33% {
+    transform: translate(-5%, -4%) rotate(-4deg);
+  }
+
+  66% {
+    transform: translate(4%, 5%) rotate(7deg);
+  }
+}
+
+@keyframes rg-float-c {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  20% {
+    transform: translate(3%, 4%) rotate(-5deg);
+  }
+
+  50% {
+    transform: translate(-5%, -3%) rotate(4deg);
+  }
+
+  80% {
+    transform: translate(2%, -5%) rotate(-3deg);
+  }
+}
+
+@keyframes rg-float-d {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(9deg);
+  }
+
+  40% {
+    transform: translate(-4%, 6%) rotate(-7deg);
+  }
+
+  70% {
+    transform: translate(6%, -4%) rotate(4deg);
+  }
+}
+
+@keyframes rg-float-e {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-4deg);
+  }
+
+  30% {
+    transform: translate(7%, 3%) rotate(5deg);
+  }
+
+  60% {
+    transform: translate(-2%, -6%) rotate(-6deg);
+  }
+}
+
+@keyframes rg-float-f {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(3deg);
+  }
+
+  25% {
+    transform: translate(-6%, 2%) rotate(-5deg);
+  }
+
+  50% {
+    transform: translate(4%, 7%) rotate(8deg);
+  }
+
+  75% {
+    transform: translate(-3%, -5%) rotate(-5deg);
+  }
+}
+
+/* ── Center layout ── */
+.rg-center {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ── Card ── */
+.rg-card {
+  background: linear-gradient(140deg, rgba(14, 18, 40, 0.96), rgba(6, 8, 22, 0.97));
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--rg-accent, #38fedc);
+  border-radius: 1.25rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 5vw, 3rem);
+  max-width: 680px;
+  width: 100%;
+  box-shadow:
+    0 0 40px rgba(56, 254, 220, 0.15),
+    0 0 80px rgba(56, 254, 220, 0.06),
+    inset 0 0 30px rgba(56, 254, 220, 0.04);
+  animation: rg-card-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes rg-card-in {
+  from {
+    transform: scale(0.88) translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── Badge ── */
+.rg-round-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.35em;
+  color: var(--rg-accent, #38fedc);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--rg-accent, #38fedc);
+  border-radius: 999px;
+  background: rgba(56, 254, 220, 0.07);
+  box-shadow: 0 0 12px rgba(56, 254, 220, 0.2);
+}
+
+.rg-round-icon {
+  font-size: 0.8rem;
+}
+
+/* ── Title ── */
+.rg-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(1.1rem, 4vw, 2rem);
+  color: #e8eaf6;
+  line-height: 1.3;
+  margin: 0 0 1rem;
+  text-shadow: 0 0 20px var(--rg-accent, #38fedc), 0 0 40px rgba(56, 254, 220, 0.3);
+}
+
+/* ── Description ── */
+.rg-desc {
+  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+  color: rgba(200, 210, 230, 0.85);
+  line-height: 1.7;
+  margin: 0 0 1.5rem;
+  border-left: 3px solid var(--rg-accent, #38fedc);
+  padding-left: 1rem;
+}
+
+/* ── Rules list ── */
+.rg-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.rg-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: rgba(56, 254, 220, 0.04);
+  border: 1px solid rgba(56, 254, 220, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  transition: background 0.2s;
+}
+
+.rg-rule:hover {
+  background: rgba(56, 254, 220, 0.09);
+}
+
+.rg-rule-num {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: var(--rg-accent, #38fedc);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+.rg-rule-text {
+  font-size: 0.85rem;
+  color: rgba(210, 220, 240, 0.9);
+  line-height: 1.5;
+}
+
+/* ── Begin Button ── */
+.rg-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 1rem 2.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  background: var(--rg-accent, #38fedc);
+  color: #04050f;
+  width: 100%;
+  box-shadow:
+    0 0 24px rgba(56, 254, 220, 0.5),
+    inset 0 0 16px rgba(255, 255, 255, 0.15);
+  transition: transform 0.15s, box-shadow 0.15s;
+  animation: rg-pulse-btn 2.5s ease-in-out infinite;
+}
+
+.rg-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 40px rgba(56, 254, 220, 0.75), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  animation: none;
+}
+
+@keyframes rg-pulse-btn {
+
+  0%,
+  100% {
+    box-shadow: 0 0 24px rgba(56, 254, 220, 0.5), inset 0 0 16px rgba(255, 255, 255, 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(56, 254, 220, 0.75), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* ── Finish page ── */
+.rg-finish-root {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: #04050f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.rg-finish-card {
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(140deg, rgba(14, 18, 40, 0.97), rgba(6, 8, 22, 0.98));
+  border: 1px solid #f5f558;
+  border-radius: 1.25rem;
+  padding: clamp(2rem, 5vw, 3.5rem);
+  max-width: 640px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(245, 245, 88, 0.25), 0 0 120px rgba(245, 245, 88, 0.1);
+  animation: rg-card-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.rg-finish-trophy {
+  font-size: clamp(3rem, 10vw, 5rem);
+  margin-bottom: 1rem;
+  animation: rg-trophy-bounce 1s ease-in-out infinite;
+}
+
+@keyframes rg-trophy-bounce {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+
+.rg-finish-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  color: #f5f558;
+  text-shadow: 0 0 20px rgba(245, 245, 88, 0.7);
+  margin: 0 0 0.75rem;
+}
+
+.rg-finish-sub {
+  font-size: 1rem;
+  color: rgba(210, 220, 240, 0.8);
+  margin: 0 0 2rem;
+  line-height: 1.6;
+}
+
+.rg-finish-crew-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.rg-finish-crew {
+  width: clamp(40px, 8vw, 70px);
+  image-rendering: pixelated;
+  animation: rg-float-a 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(245, 245, 88, 0.5));
+}
+
+.rg-finish-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  background: #f5f558;
+  color: #04050f;
+  box-shadow: 0 0 24px rgba(245, 245, 88, 0.5);
+  transition: transform 0.15s;
+}
+
+.rg-finish-btn:hover {
+  transform: scale(1.04);
+}
+
+/* ── Continue overlay (added to rounds) ── */
+.rg-continue-overlay {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+}
+
+.rg-continue-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid #38fedc;
+  cursor: pointer;
+  background: rgba(4, 5, 15, 0.92);
+  color: #38fedc;
+  box-shadow: 0 0 20px rgba(56, 254, 220, 0.4);
+  backdrop-filter: blur(8px);
+  animation: rg-pulse-btn 2s ease-in-out infinite;
+  transition: transform 0.15s;
+  white-space: nowrap;
+}
+
+.rg-continue-btn:hover {
+  transform: scale(1.04);
+  animation: none;
+}

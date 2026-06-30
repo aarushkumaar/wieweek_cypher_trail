@@ -1,0 +1,592 @@
+/* ============================================================================
+   AdminPanel.css  –  WIE2026 Crewmate Protocol Admin Dashboard
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* ── CSS Variables ──────────────────────────────────────────────────────────── */
+:root {
+  --bg-base:    #0d0f1a;
+  --bg-card:    #161927;
+  --bg-card2:   #1e2235;
+  --border:     rgba(124, 58, 237, 0.18);
+  --border-lit: rgba(124, 58, 237, 0.5);
+
+  --accent:      #7c3aed;
+  --accent-glow: rgba(124, 58, 237, 0.25);
+  --accent-lt:   #a78bfa;
+
+  --green:    #22c55e;
+  --green-bg: rgba(34, 197, 94, 0.12);
+  --blue:     #38bdf8;
+  --blue-bg:  rgba(56, 189, 248, 0.12);
+  --red:      #f87171;
+  --red-bg:   rgba(248, 113, 113, 0.12);
+  --amber:    #fbbf24;
+  --amber-bg: rgba(251, 191, 36, 0.12);
+  --grey:     #64748b;
+  --grey-bg:  rgba(100, 116, 139, 0.15);
+
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-dim:       #475569;
+
+  --font-head: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+
+  --radius-sm: 0.4rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 40px rgba(124, 58, 237, 0.1);
+}
+
+/* ── Reset / Base ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.ap-root {
+  min-height: 100vh;
+  background: var(--bg-base);
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* ── Password Gate ──────────────────────────────────────────────────────────── */
+.ap-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, #1e0a3c 0%, var(--bg-base) 60%);
+  padding: 1.5rem;
+}
+
+.ap-gate-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow-card), var(--shadow-glow);
+  text-align: center;
+}
+
+.ap-gate-icon {
+  font-size: 2.8rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.ap-gate-title {
+  font-family: var(--font-head);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.ap-gate-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.75rem;
+}
+
+.ap-gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ap-gate-input {
+  background: rgba(30, 34, 53, 0.9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  text-align: center;
+  letter-spacing: 0.15em;
+}
+
+.ap-gate-input:focus {
+  border-color: var(--border-lit);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.ap-gate-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, #5b21b6 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.8rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-head);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 18px rgba(124,58,237,0.4);
+}
+
+.ap-gate-btn:hover  { opacity: 0.92; transform: translateY(-1px); }
+.ap-gate-btn:active { transform: translateY(0); }
+
+.ap-gate-error {
+  background: var(--red-bg);
+  border: 1px solid rgba(248,113,113,0.35);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.9rem;
+  color: var(--red);
+  font-size: 0.83rem;
+}
+
+/* ── Dashboard Shell ────────────────────────────────────────────────────────── */
+.ap-dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Top bar ────────────────────────────────────────────────────────────────── */
+.ap-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(22, 25, 39, 0.9);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.ap-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ap-topbar-logo { font-size: 1.5rem; }
+
+.ap-topbar-title {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ap-topbar-sub {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  margin-top: 1px;
+}
+
+.ap-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ap-sync-time {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.ap-refresh-btn {
+  background: rgba(124,58,237,0.15);
+  border: 1px solid var(--border-lit);
+  border-radius: var(--radius-sm);
+  color: var(--accent-lt);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.ap-refresh-btn:hover { background: rgba(124,58,237,0.28); }
+.ap-refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ap-logout-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.ap-logout-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* ── Stat cards ─────────────────────────────────────────────────────────────── */
+.ap-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.ap-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ap-stat-card:hover {
+  border-color: var(--border-lit);
+  box-shadow: var(--shadow-card), 0 0 20px var(--accent-glow);
+}
+
+.ap-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.ap-stat-value {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-lt);
+  line-height: 1.1;
+}
+
+.ap-stat-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────────────── */
+.ap-tabs-row {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ap-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  padding: 0.7rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-head);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.ap-tab:hover { color: var(--text-secondary); }
+
+.ap-tab.active {
+  color: var(--accent-lt);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Tab pane ───────────────────────────────────────────────────────────────── */
+.ap-pane {
+  padding: 1.25rem 1.5rem 2rem;
+  flex: 1;
+}
+
+.ap-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.ap-pane-title {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ap-pane-count {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-left: 0.5rem;
+}
+
+.ap-export-btn {
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.35);
+  border-radius: var(--radius-sm);
+  color: var(--green);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.ap-export-btn:hover { background: rgba(34,197,94,0.22); }
+
+/* ── Audit note ─────────────────────────────────────────────────────────────── */
+.ap-audit-note {
+  background: rgba(56,189,248,0.08);
+  border: 1px solid rgba(56,189,248,0.25);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1rem;
+  color: var(--blue);
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Table wrapper ──────────────────────────────────────────────────────────── */
+.ap-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+.ap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  min-width: 650px;
+}
+
+.ap-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.ap-table th {
+  background: var(--bg-card2);
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.ap-table td {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.08);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.ap-table tr:last-child td { border-bottom: none; }
+
+.ap-table tbody tr {
+  transition: background 0.15s;
+}
+
+.ap-table tbody tr:hover {
+  background: rgba(124, 58, 237, 0.05);
+}
+
+.ap-cell-secondary {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.ap-cell-dim {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+.ap-cell-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.badge-green   { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(34,197,94,0.25); }
+.badge-blue    { background: var(--blue-bg);   color: var(--blue);   border: 1px solid rgba(56,189,248,0.25); }
+.badge-red     { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(248,113,113,0.25); }
+.badge-amber   { background: var(--amber-bg);  color: var(--amber);  border: 1px solid rgba(251,191,36,0.25); }
+.badge-grey    { background: var(--grey-bg);   color: var(--grey);   border: 1px solid rgba(100,116,139,0.25); }
+.badge-purple  { background: rgba(124,58,237,0.15); color: var(--accent-lt); border: 1px solid rgba(124,58,237,0.3); }
+
+/* ── Empty state ────────────────────────────────────────────────────────────── */
+.ap-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.ap-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+
+/* ── Loading / error ────────────────────────────────────────────────────────── */
+.ap-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.ap-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(124,58,237,0.3);
+  border-top-color: var(--accent-lt);
+  border-radius: 50%;
+  animation: ap-spin 0.75s linear infinite;
+}
+
+@keyframes ap-spin { to { transform: rotate(360deg); } }
+
+.ap-error-banner {
+  background: var(--red-bg);
+  border: 1px solid rgba(248,113,113,0.35);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  color: var(--red);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ap-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1rem;
+  }
+
+  .ap-topbar {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+  }
+
+  .ap-topbar-right {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .ap-tabs-row {
+    padding: 0 0.75rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ap-tab { padding: 0.6rem 0.75rem; font-size: 0.8rem; }
+
+  .ap-pane { padding: 1rem; }
+
+  .ap-stat-value { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .ap-stats-row { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .ap-gate-card { padding: 2rem 1.25rem; }
+}
+
+/* ── Scoreboard ──────────────────────────────────────────────────────────────── */
+
+/** Round score cells: color indicates pass/fail/not-attempted */
+.sb-round-cell {
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: 0;          /* table cells don't clip */
+}
+
+/* Scored > 0 */
+.sb-cell-green {
+  color: var(--green);
+  background: rgba(34, 197, 94, 0.07);
+}
+
+/* Scored 0 (attempted but failed) */
+.sb-cell-red {
+  color: var(--red);
+  background: rgba(248, 113, 113, 0.07);
+}
+
+/* Not attempted (no row in scores table) */
+.sb-cell-grey {
+  color: var(--text-dim);
+  background: transparent;
+}
+
+/* Scoreboard table: wider min-width to fit all round columns */
+.ap-pane .ap-table-wrap .ap-table {
+  min-width: 900px;
+}
+
+/* Rank badge sizing in scoreboard */
+.ap-table td .badge {
+  min-width: 28px;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+/* Pulse animation for first-place row */
+.ap-table tbody tr:first-child td {
+  background: rgba(251, 191, 36, 0.04);
+}
+
+/* Export btn disabled */
+.ap-export-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Error banner tweak: allow multi-line diagnostic text */
+.ap-error-banner small {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: rgba(248, 113, 113, 0.8);
+}

@@ -1,0 +1,81 @@
+/* ── CrewmateSelection.css ──────────────────────────────────────────────── */
+
+.cs-container {
+  padding: clamp(24px, 4vw, 48px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-start;
+  gap: clamp(20px, 3vw, 36px);
+  padding: clamp(12px, 2vw, 24px);
+  overflow: hidden;
+}
+
+.cs-folder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 12px;
+  /* NO hover effects per user request */
+}
+
+/* Gold folder icon */
+.cs-folder-icon {
+  width: clamp(56px, 8vw, 80px);
+  height: clamp(44px, 6.5vw, 64px);
+  position: relative;
+}
+
+.cs-folder-tab {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 22%;
+  background: #b8a03e;
+  border-radius: 4px 4px 0 0;
+}
+
+.cs-folder-body {
+  position: absolute;
+  top: 18%;
+  left: 0;
+  width: 100%;
+  height: 82%;
+  background: linear-gradient(180deg, #c4a747, #a8903a);
+  border-radius: 0 4px 4px 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cs-folder-label {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: clamp(0.72rem, 1.4vw, 0.88rem);
+  color: #333;
+  text-align: center;
+  word-break: break-word;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .cs-grid {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cs-grid {
+    gap: 12px;
+  }
+}
