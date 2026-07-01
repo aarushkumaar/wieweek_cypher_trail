@@ -22,11 +22,11 @@ import {
   calculateTotalScore,
 } from '../lib/scoringEngine.js';
 
-import Round1MCQ from './rounds/Round1MCQ.jsx';
-import Round2Coding from './rounds/Round2Coding.jsx';
-import Round3HiddenKey from './rounds/Round3HiddenKey.jsx';
-import Round4DecodeEcho from './rounds/Round4DecodeEcho.jsx';
-import Round5ImposterFiles from './rounds/Round5ImposterFiles.jsx';
+import Round1 from '../wie-week/round1/round1.jsx';
+import Round2 from '../wie-week/round2/round2.jsx';
+import Round3 from '../wie-week/round3/round3.jsx';
+import Round4 from '../wie-week/round4/round4.jsx';
+import Round5 from '../wie-week/round5/round5.jsx';
 
 // Existing transition / guidelines pages
 import HackAmongUs from '../wie-week/Transition_pages/HackAmongUs.jsx';
@@ -184,9 +184,7 @@ export default function GameFlow() {
   // Lazy init: if AuthCallback set ?play=1 after OAuth, start at hack1.
   // Otherwise start at hack1 (GameFlow is only mounted after auth succeeds).
   const [stage, setStage] = useState(() => {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get('play') === '1') {
-      window.history.replaceState({}, '', '/game');
+    if (window.location.search.includes('play=1')) {
       return 'hack1';
     }
     // Try to resume from sessionStorage progress
@@ -197,10 +195,10 @@ export default function GameFlow() {
     return 'hack1';
   });
 
-  const [player, setPlayer]     = useState(null);
+  const [player, setPlayer] = useState(null);
   const [sessionId, setSessionId] = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const advance = useCallback(() => setStage(s => nextStage(s)), []);
 
@@ -210,13 +208,12 @@ export default function GameFlow() {
       try {
         // 1. Check Supabase auth session
         const authUser = await getAuthUser();
-
+        console.log("AUTH USER:", authUser);
         if (!authUser) {
-          // No live session — redirect to login
-          navigate('/login', { replace: true });
+          setLoading(false);
+          setError("No active session. Please login again.");
           return;
         }
-
         // 2. Try to restore from localStorage (existing session)
         const { player: stored, sessionId: storedSess } = getStoredPlayer();
         if (stored && storedSess) {
@@ -287,32 +284,33 @@ export default function GameFlow() {
 
   return (
     <>
-      {stage === 'hack1'   && <HackAmongUs roundNum={1} onComplete={advance} />}
+      {stage === 'hack1' && <HackAmongUs roundNum={1} onComplete={advance} />}
       {stage === 'round1t' && <Round1T onStart={advance} />}
-      {stage === 'round1'  && <Round1MCQ {...roundProps} onComplete={advance} />}
+      {stage === 'round1' && <Round1 {...roundProps} onComplete={advance} />}
 
-      {stage === 'hack2'   && <HackAmongUs roundNum={2} onComplete={advance} />}
+      {stage === 'hack2' && <HackAmongUs roundNum={2} onComplete={advance} />}
       {stage === 'round2t' && <Round2T onStart={advance} />}
-      {stage === 'round2'  && <Round2Coding {...roundProps} onComplete={advance} />}
+      {stage === 'round2' && <Round2 {...roundProps} onComplete={advance} />}
 
-      {stage === 'hack3'   && <HackAmongUs roundNum={3} onComplete={advance} />}
+      {stage === 'hack3' && <HackAmongUs roundNum={3} onComplete={advance} />}
       {stage === 'round3t' && <Round3T onStart={advance} />}
-      {stage === 'round3'  && <Round3HiddenKey {...roundProps} onComplete={advance} />}
+      {stage === 'round3' && <Round3 {...roundProps} onComplete={advance} />}
 
-      {stage === 'hack4'   && <HackAmongUs roundNum={4} onComplete={advance} />}
+      {stage === 'hack4' && <HackAmongUs roundNum={4} onComplete={advance} />}
       {stage === 'round4t' && <Round4T onStart={advance} />}
-      {stage === 'round4'  && <Round4DecodeEcho {...roundProps} onComplete={advance} />}
+      {stage === 'round4' && <Round4 {...roundProps} onComplete={advance} />}
 
-      {stage === 'hack5'   && <HackAmongUs roundNum={5} onComplete={advance} />}
+      {stage === 'hack5' && <HackAmongUs roundNum={5} onComplete={advance} />}
       {stage === 'round5t' && <Round5T onStart={advance} />}
-      {stage === 'round5'  && <Round5ImposterFiles {...roundProps} onComplete={advance} />}
+      {stage === 'round5' && <Round5 {...roundProps} onComplete={advance} />}
 
       {stage === 'results' && (
         <Results player={player} sessionId={sessionId} onRestart={handleRestart} />
       )}
 
       {/* Fallback finish screen if referenced */}
-      {stage === 'finish'  && <Finish onRestart={handleRestart} />}
+      {stage === 'finish' && <Finish onRestart={handleRestart} />}
     </>
   );
 }
+

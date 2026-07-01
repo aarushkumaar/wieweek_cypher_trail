@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import TabletFrame from './components/TabletFrame';
 import CrewmateSelection from './components/CrewmateSelection';
 import FileExplorer from './components/FileExplorer';
 import FolderViewer from './components/FolderViewer';
 import { CREWMATES } from './data/mockData';
+
+import {
+  ROUND_NAMES,
+  startRoundTimer,
+  endRoundTimer,
+  markRoundComplete,
+} from '../../lib/scoringEngine.js';
+import { submitRoundScore } from '../../lib/gameService.js';
 
 /*
   Round 5 — The Cypher Trail
@@ -14,12 +22,18 @@ import { CREWMATES } from './data/mockData';
   • viewer    : fullscreen dark view with sidebar, data, and ACCUSE button
 */
 
+const ROUND_NAME = ROUND_NAMES.ROUND5;
 const STAGES = { SELECTION: 'selection', EXPLORER: 'explorer', VIEWER: 'viewer' };
 
-export default function Round5({ onComplete }) {
+export default function Round5({ playerId, sessionId, onComplete }) {
   const [stage, setStage] = useState(STAGES.SELECTION);
   const [selectedCrewmate, setCrewmate] = useState(null);
   const [selectedFolder, setFolder] = useState(null);
+
+  // Start the round timer once, on mount
+  useEffect(() => {
+    startRoundTimer(ROUND_NAME);
+  }, []);
 
   /* ── Stage handlers ── */
   const handleCrewmateSelect = (crewmate) => {
@@ -42,6 +56,26 @@ export default function Round5({ onComplete }) {
     setFolder(null);
     setStage(STAGES.SELECTION);
   };
+
+  // Called by FolderViewer's ShipSavedScreen "CONTINUE MISSION" button
+  const handleRoundComplete = useCallback(async () => {
+    try {
+      const timeTaken = endRoundTimer(ROUND_NAME);
+      await submitRoundScore(playerId, sessionId, {
+        score: 10,
+        round: ROUND_NAME,
+        time_taken_secs: timeTaken,
+        role: 'crewmate',
+        survived: true,
+      });
+      markRoundComplete(ROUND_NAME);
+      onComplete?.({ score: 10, timeTaken });
+    } catch (e) {
+      console.error('Round 5 submit error:', e);
+      // Still advance even if submit fails so the player isn't blocked
+      onComplete?.({ score: 0 });
+    }
+  }, [playerId, sessionId, onComplete]);
 
   /* ── Render ── */
 
@@ -90,7 +124,7 @@ export default function Round5({ onComplete }) {
       crewmate={selectedCrewmate}
       initialFolder={selectedFolder}
       onBack={handleBackToExplorer}
-      onRoundComplete={onComplete}
+      onRoundComplete={handleRoundComplete}
     />
   );
 }

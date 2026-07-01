@@ -1,10 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './round3.css';
 import bgImage from './Assets/Round 6.png';
 import crewBlue from '../round1/assets/crewmate_blue.png';
 import crewGreen from '../round1/assets/crewmate_green.png';
 import crewRed from '../round1/assets/crewmate_red.png';
 import crewYellow from '../round1/assets/crewmate_yellow.png';
+import {
+  ROUND_NAMES,
+  startRoundTimer,
+  endRoundTimer,
+  markRoundComplete,
+  getRoundElapsed,
+  formatSecondsDisplay,
+} from '../../lib/scoringEngine.js';
+import { submitRoundScore } from '../../lib/gameService.js';
+
+const ROUND_NAME = ROUND_NAMES.ROUND3;
+
+// ⚠️ The actual access key for this round (matches HIDDEN_KEY from the old build)
+const HIDDEN_KEY = 'SABOTAGE-DEFEATED';
+
+let hasLoggedSysMsg = false;
 
 const ROUND3_STARS = (count) => Array.from({ length: count }, (_, i) => ({
   id: i,
@@ -70,14 +86,15 @@ function DebrisField() {
   );
 }
 
-let hasLoggedSysMsg = false;
-
-export default function Round3({ onComplete }) {
-  const HIDDEN_KEY = 'SABOTAGE-DEFEATED';
+export default function Round3({ playerId, sessionId, onComplete }) {
   const [input, setInput] = useState('');
-  const [status, setStatus] = useState('idle');
-  const [seq, setSeq] = useState([]);
+  const [status, setStatus] = useState('idle'); // idle | err | ok
+  const [elapsed, setElapsed] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitErr, setSubmitErr] = useState('');
   const [toastMsg, setToastMsg] = useState('');
+  const timerRef = useRef(null);
+
   const [crew] = useState(() => {
     const savedTeam = localStorage.getItem('team_players');
     if (savedTeam) {
@@ -94,6 +111,14 @@ export default function Round3({ onComplete }) {
     ];
   });
 
+  // start the round timer + tick the on-screen clock
+  useEffect(() => {
+    startRoundTimer(ROUND_NAME);
+    timerRef.current = setInterval(() => setElapsed(getRoundElapsed(ROUND_NAME)), 1000);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  // hide the key in localStorage + drop console hints pointing to it
   useEffect(() => {
     localStorage.setItem('override_protocol_key', HIDDEN_KEY);
 
@@ -128,30 +153,39 @@ export default function Round3({ onComplete }) {
     };
   }, []);
 
-  const handleSubmit = () => {
-    if (input.trim().toUpperCase() === HIDDEN_KEY.toUpperCase()) {
-      setStatus('ok');
-    } else {
-      setStatus('err');
-      setInput('');
-      setTimeout(() => setStatus('idle'), 2000);
-    }
-  };
+  async function handleSubmit() {
+    if (submitting) return;
 
-  const handleScrubberClick = (side) => {
-    const now = Date.now();
-    const newSeq = [...seq, { side, time: now }].slice(-3);
-    setSeq(newSeq);
-    if (newSeq.length === 3 && newSeq.map(c => c.side).join(',') === 'left,left,right') {
-      if (now - newSeq[0].time <= 3000) {
-        setToastMsg(`SECURITY OVERRIDE GRANTED\nOverride Key: ${HIDDEN_KEY}\n\n(O2 Scrubbers re-engaged. Access restored.)`);
-        setTimeout(() => setToastMsg(''), 5000);
-        setSeq([]);
+    const passed = input.trim().toUpperCase() === HIDDEN_KEY.toUpperCase();
+    const score = passed ? 10 : 0;
+
+    setSubmitting(true);
+    setSubmitErr('');
+    try {
+      const timeTaken = endRoundTimer(ROUND_NAME);
+      await submitRoundScore(playerId, sessionId, {
+        score,
+        round: ROUND_NAME,
+        time_taken_secs: timeTaken,
+        role: 'crewmate',
+        survived: passed,
+      });
+      markRoundComplete(ROUND_NAME);
+
+      if (passed) {
+        setStatus('ok');
+        setTimeout(() => onComplete?.({ score, timeTaken }), 1600);
       } else {
-        setSeq([]);
+        setStatus('err');
+        setInput('');
+        setTimeout(() => setStatus('idle'), 2000);
       }
+    } catch (err) {
+      setSubmitErr(err.message ?? 'Submission failed. Try again.');
+    } finally {
+      setSubmitting(false);
     }
-  };
+  }
 
   function handleKey(e) {
     if (e.key === 'Enter') handleSubmit();
@@ -197,12 +231,12 @@ export default function Round3({ onComplete }) {
                   <div className="r3-bar-wrap"><div className="r3-bar-fill--err"></div></div>
                 </div>
 
-                {/* scrubbers */}
+                {/* scrubbers — decorative now, the key lives with the hidden crewmate */}
                 <div style={{ marginTop: '10px', zIndex: 2 }}>
                   <div className="r3-hologram" style={{ marginBottom: 5 }}>O2 SCRUBBERS</div>
                   <div className="r3-fan-wrap">
-                    <div className="r3-fan" onClick={() => handleScrubberClick('left')} style={{ cursor: 'pointer' }}>✺</div>
-                    <div className="r3-fan r3-fan--err" onClick={() => handleScrubberClick('right')} style={{ cursor: 'pointer' }}>✺</div>
+                    <div className="r3-fan">✺</div>
+                    <div className="r3-fan r3-fan--err">✺</div>
                   </div>
                   <div className="r3-hologram" style={{ color: '#ff4060', fontSize: '0.6rem', marginTop: '8px' }}>
                     SEC 2 FAILING<br />
@@ -245,10 +279,15 @@ export default function Round3({ onComplete }) {
 
             {/* center main */}
             <div className="r3-center">
-              <img src={bgImage} alt="Round 6 Background" className="r3-bg-img" />
+              <div style={{ position: 'relative' }}>
+                <img src={bgImage} alt="Round 6 Background" className="r3-bg-img" />
+              </div>
 
               <div className="r3-terminal">
                 <div className="r3-term-title">SYSTEM OVERRIDE</div>
+                <div style={{ marginBottom: '6px', fontSize: '0.6rem', color: '#5ac8e8', fontFamily: 'JetBrains Mono, monospace' }}>
+                  ⏱ {formatSecondsDisplay(elapsed)}
+                </div>
                 <input
                   type="text"
                   className="r3-input"
@@ -259,12 +298,17 @@ export default function Round3({ onComplete }) {
                   readOnly={status === 'ok'}
                 />
                 <br />
-                <button className="r3-btn" onClick={handleSubmit} disabled={status === 'ok'}>
-                  {status === 'ok' ? 'ACCESS GRANTED' : 'VERIFY KEY'}
+                <button
+                  className="r3-btn"
+                  onClick={handleSubmit}
+                  disabled={status === 'ok' || submitting || !input.trim()}
+                >
+                  {status === 'ok' ? 'ACCESS GRANTED' : submitting ? 'VERIFYING…' : 'VERIFY KEY'}
                 </button>
                 <div className="r3-feedback">
                   {status === 'err' && <span className="r3-feedback--err">INVALID KEY. ACCESS DENIED.</span>}
                   {status === 'ok' && <span className="r3-feedback--ok">OVERRIDE ACCEPTED. PROCEEDING...</span>}
+                  {submitErr && <span className="r3-feedback--err">{submitErr}</span>}
                 </div>
               </div>
             </div>
@@ -366,7 +410,9 @@ export default function Round3({ onComplete }) {
         </div>
       </div>
 
-      {status === 'ok' && onComplete && <NavigatingOverlay onDone={onComplete} label="OVERRIDE ACCEPTED" />}
+      {status === 'ok' && onComplete && (
+        <NavigatingOverlay onDone={() => { }} label="OVERRIDE ACCEPTED" />
+      )}
     </>
   );
 }

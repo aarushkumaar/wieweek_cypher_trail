@@ -38,10 +38,10 @@ import Finish from './wie-week/Transition_pages/finish';
 
 // ── Supabase / admin imports ──────────────────────────────────────────────────
 import { PlayerProvider } from './lib/PlayerContext.jsx';
-import AdminPanel    from './pages/AdminPanel.jsx';
-import AuthCallback  from './pages/AuthCallback.jsx';
-import Login         from './pages/Login.jsx';
-import GameFlow      from './pages/GameFlow.jsx';
+import AdminPanel from './pages/AdminPanel.jsx';
+import AuthCallback from './pages/AuthCallback.jsx';
+import Login from './pages/Login.jsx';
+import GameFlow from './pages/GameFlow.jsx';
 
 import './index.css';
 
@@ -131,13 +131,13 @@ export default function App() {
           {/* ── OAuth callback (public — must be before catch-all) ── */}
           <Route path="/auth/callback" element={<AuthCallback />} />
 
-          {/* ── Authenticated game flow ── */}
+          {/* ── Authenticated game flow (with scoring + Supabase) ── */}
           <Route path="/game" element={<GameFlow />} />
 
           {/* ── Admin dashboard (password-gated internally) ── */}
           <Route path="/admin" element={<AdminPanel />} />
 
-          {/* ── Main landing / catch-all ── */}
+          {/* ── Main landing / catch-all → landing page ── */}
           <Route path="*" element={<GameApp />} />
         </Routes>
       </BrowserRouter>

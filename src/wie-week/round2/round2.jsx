@@ -1,9 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRound2Modules } from '../api';
+import { buildRound2Modules } from '../../data/codingQuestions.js';
 import './round2.css';
-import electricalBg from './assets/electricalBg.png';
+import electricalBg from "./Assets/electricalBg.png";
 import crewBlue from '../round1/assets/crewmate_blue.png';
 import crewRed from '../round1/assets/crewmate_red.png';
+
+import {
+  ROUND_NAMES,
+  startRoundTimer,
+  endRoundTimer,
+  markRoundComplete,
+  getRoundElapsed,
+  formatSecondsDisplay,
+} from '../../lib/scoringEngine';
+
+import { submitRoundScore } from '../../lib/gameService';
 
 const GOLD_STARS = (count) => Array.from({ length: count }, (_, i) => ({
   id: i,
@@ -81,9 +92,11 @@ function CodeLine({ line, num }) {
   );
 }
 
-export default function Round2({ onComplete }) {
-  const [modules, setModules] = useState([]);
-  const [loading, setLoading] = useState(true);
+const ROUND_NAME = ROUND_NAMES.ROUND2;
+const MODULE_SCORE = 10; // flat score for fully restoring one module + override code
+
+export default function Round2({ playerId, sessionId, onComplete }) {
+  const [modules] = useState(() => buildRound2Modules());
   const [selectedModule, setSelectedModule] = useState(null);
   const [activeModule, setActiveModule] = useState(null);
   const [activeQ, setActiveQ] = useState(0);
@@ -91,20 +104,17 @@ export default function Round2({ onComplete }) {
   const [feedback, setFeedback] = useState({});
   const [input, setInput] = useState('');
   const [showCode, setShowCode] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef(null);
 
+  // Start round timer
   useEffect(() => {
-    getRound2Modules().then(data => {
-      setModules(data);
-      setActiveModule(data[0]?.id ?? null);
-      setLoading(false);
-    });
+    startRoundTimer(ROUND_NAME);
+    timerRef.current = setInterval(() => {
+      setElapsed(getRoundElapsed(ROUND_NAME));
+    }, 1000);
+    return () => clearInterval(timerRef.current);
   }, []);
-
-  if (loading) return (
-    <div className="r2-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ fontFamily: 'Orbitron, monospace', color: '#5ac8e8', letterSpacing: '0.2em', fontSize: '0.9rem' }}>LOADING MODULES...</span>
-    </div>
-  );
 
   const mod = modules.find(m => m.id === activeModule) ?? modules[0];
   const qIdx = activeQ;
@@ -151,6 +161,31 @@ export default function Round2({ onComplete }) {
 
   function handleKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitAnswer(); }
+  }
+
+  async function finishRound() {
+    clearInterval(timerRef.current);
+
+    const timeTaken = endRoundTimer(ROUND_NAME);
+
+    try {
+      await submitRoundScore(playerId, sessionId, {
+        round: ROUND_NAME,
+        score: MODULE_SCORE,
+        role: 'crewmate',
+        survived: true,
+        time_taken_secs: timeTaken,
+      });
+
+      markRoundComplete(ROUND_NAME);
+
+      onComplete?.({
+        score: MODULE_SCORE,
+        timeTaken,
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
@@ -223,7 +258,7 @@ export default function Round2({ onComplete }) {
           <div className="r2-center">
             <div className="r2-center-title">
               <h1>ELECTRICAL</h1>
-              <p>ENGINEERING LOG ACCESS</p>
+              <p>ENGINEERING LOG ACCESS &nbsp;·&nbsp; ⏱ {formatSecondsDisplay(elapsed)}</p>
             </div>
 
             <div className="r2-bg">
@@ -351,11 +386,14 @@ export default function Round2({ onComplete }) {
                   </div>
                 </div>
 
-                {/* Module title */}
+                {/* Module title + prompt */}
                 <div className="r2-panel" style={{ flexShrink: 0 }}>
                   <GoldStars stars={PANEL_STARS.modtitle} />
-                  <div className="r2-panel-inner" style={{ padding: '6px 12px' }}>
-                    <div className="r2-mod-title" style={{ color: mod.col }}>{q.title} — BUG HUNT Q{qIdx + 1}</div>
+                  <div className="r2-panel-inner" style={{ padding: '6px 12px', gap: 4 }}>
+                    <div className="r2-mod-title" style={{ color: mod.col }}>{q.title} &nbsp;·&nbsp; Q{qIdx + 1}/4</div>
+                    <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.72rem', color: '#9fb4c2', lineHeight: 1.5 }}>
+                      {q.prompt}
+                    </div>
                   </div>
                 </div>
 
@@ -377,11 +415,11 @@ export default function Round2({ onComplete }) {
                 <div className="r2-panel r2-panel--br" style={{ flexShrink: 0 }}>
                   <GoldStars stars={PANEL_STARS.answer} />
                   <div className="r2-panel-inner" style={{ gap: 6 }}>
-                    <div className="r2-answer-label">WHAT IS THE OUTPUT?</div>
+                    <div className="r2-answer-label">{q.answerLabel}</div>
                     <textarea
                       className="r2-answer-input"
                       rows={2}
-                      placeholder="Enter the single-digit output..."
+                      placeholder="Enter your answer..."
                       value={input}
                       readOnly={isCorrect}
                       onChange={e => { setInput(e.target.value); setFeedback(p => ({ ...p, [key]: undefined })); }}
@@ -463,21 +501,19 @@ export default function Round2({ onComplete }) {
       {showCode && selectedModule && (
         <CodePopup
           mod={mod}
-          answers={answers}
-          activeModule={activeModule}
-          onContinue={onComplete}
+          onContinue={finishRound}
         />
       )}
     </>
   );
 }
 
-function CodePopup({ mod, answers, activeModule, onContinue }) {
-  const digits = [0, 1, 2, 3].map(qi => answers[`${activeModule}-${qi}`] ?? '?');
-  const code = digits.join('');
+function CodePopup({ mod, onContinue }) {
+  const code = mod.overrideCode;
 
-  const [entry, setEntry] = useState(['', '', '', '']);
+  const [entry, setEntry] = useState(Array.from({ length: code.length }, () => ''));
   const [status, setStatus] = useState('idle');
+  const [submitting, setSubmitting] = useState(false);
   const inputRefs = useRef([]);
 
   const handleDigit = (i, val) => {
@@ -486,7 +522,7 @@ function CodePopup({ mod, answers, activeModule, onContinue }) {
     next[i] = val;
     setEntry(next);
     setStatus('idle');
-    if (val && i < 3) inputRefs.current[i + 1]?.focus();
+    if (val && i < code.length - 1) inputRefs.current[i + 1]?.focus();
   };
 
   const handleKeyDown = (i, e) => {
@@ -496,19 +532,24 @@ function CodePopup({ mod, answers, activeModule, onContinue }) {
     if (e.key === 'Enter') handleSubmit();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const attempt = entry.join('').toUpperCase();
-    if (attempt.length < 4) return;
+    if (attempt.length < code.length) return;
     if (attempt === code.toUpperCase()) {
       setStatus('ok');
     } else {
       setStatus('err');
       setTimeout(() => {
         setStatus('idle');
-        setEntry(['', '', '', '']);
+        setEntry(Array.from({ length: code.length }, () => ''));
         inputRefs.current[0]?.focus();
       }, 1200);
     }
+  };
+
+  const handleContinue = async () => {
+    setSubmitting(true);
+    await onContinue();
   };
 
   return (
@@ -530,7 +571,7 @@ function CodePopup({ mod, answers, activeModule, onContinue }) {
         boxShadow: `0 0 60px ${mod.col}33, 0 0 30px rgba(0,0,0,0.6)`,
       }}>
         <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: 'clamp(0.5rem,1.5vw,0.8rem)', color: '#39ff14', letterSpacing: '0.3em' }}>MODULE RESTORED</div>
-        <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: 'clamp(0.4rem,1.2vw,0.65rem)', color: mod.col, letterSpacing: '0.15em' }}>{mod.lang} — ALL 4 OUTPUTS FOUND</div>
+        <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: 'clamp(0.4rem,1.2vw,0.65rem)', color: mod.col, letterSpacing: '0.15em' }}>{mod.lang} — ALL 4 ANOMALIES RESOLVED</div>
 
         <div style={{
           background: 'rgba(255,200,0,0.07)',
@@ -539,16 +580,16 @@ function CodePopup({ mod, answers, activeModule, onContinue }) {
           padding: '14px 20px',
           textAlign: 'center',
         }}>
-          <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: '0.45rem', color: '#ffc800', letterSpacing: '0.15em', marginBottom: 8 }}>HINT</div>
+          <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: '0.45rem', color: '#ffc800', letterSpacing: '0.15em', marginBottom: 8 }}>MASTER OVERRIDE CODE — LOCKED</div>
           <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '0.85rem', color: '#ccc', lineHeight: 1.6 }}>
-            Four outputs. Four locks. The ship gave them to you in sequence, and only the sequence matters now.
+            The code wasn't recovered outright — it's hidden in the answers you already gave.
             <br />
-            <strong style={{ color: '#ffc800' }}>Recall the answers you found, then place them back in the order that mattered to the system.</strong>
+            Think back over the {code.length} anomalies you just solved for {mod.lang}, and transcribe what you find into the terminal below.
           </div>
         </div>
 
         <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: '0.45rem', color: '#5ac8e8', letterSpacing: '0.2em' }}>
-          ENTER ACCESS CODE
+          ENTER OVERRIDE CODE
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           {entry.map((d, i) => (
@@ -585,15 +626,15 @@ function CodePopup({ mod, answers, activeModule, onContinue }) {
         {status !== 'ok' ? (
           <button
             onClick={handleSubmit}
-            disabled={entry.join('').length < 4}
+            disabled={entry.join('').length < code.length}
             style={{
               fontFamily: "'Press Start 2P',monospace", fontSize: '0.55rem',
               padding: '12px 32px',
-              background: entry.join('').length === 4 ? 'rgba(56,254,220,0.15)' : 'rgba(100,100,100,0.1)',
-              border: `2px solid ${entry.join('').length === 4 ? '#38fedc' : '#444'}`,
+              background: entry.join('').length === code.length ? 'rgba(56,254,220,0.15)' : 'rgba(100,100,100,0.1)',
+              border: `2px solid ${entry.join('').length === code.length ? '#38fedc' : '#444'}`,
               borderRadius: 8,
-              color: entry.join('').length === 4 ? '#38fedc' : '#555',
-              cursor: entry.join('').length === 4 ? 'pointer' : 'not-allowed',
+              color: entry.join('').length === code.length ? '#38fedc' : '#555',
+              cursor: entry.join('').length === code.length ? 'pointer' : 'not-allowed',
               letterSpacing: '0.1em',
               transition: 'all 0.2s',
             }}
@@ -602,20 +643,22 @@ function CodePopup({ mod, answers, activeModule, onContinue }) {
           </button>
         ) : (
           <button
-            onClick={onContinue}
+            onClick={handleContinue}
+            disabled={submitting}
             style={{
               fontFamily: "'Press Start 2P',monospace", fontSize: '0.55rem',
               padding: '12px 32px',
               background: 'rgba(56,254,220,0.15)',
               border: '2px solid #38fedc',
               borderRadius: 8, color: '#38fedc',
-              cursor: 'pointer', letterSpacing: '0.1em',
+              cursor: submitting ? 'default' : 'pointer', letterSpacing: '0.1em',
               transition: 'all 0.2s',
+              opacity: submitting ? 0.6 : 1,
             }}
-            onMouseOver={e => e.currentTarget.style.background = 'rgba(56,254,220,0.3)'}
-            onMouseOut={e => e.currentTarget.style.background = 'rgba(56,254,220,0.15)'}
+            onMouseOver={e => { if (!submitting) e.currentTarget.style.background = 'rgba(56,254,220,0.3)'; }}
+            onMouseOut={e => { if (!submitting) e.currentTarget.style.background = 'rgba(56,254,220,0.15)'; }}
           >
-            CONTINUE MISSION →
+            {submitting ? 'TRANSMITTING…' : 'CONTINUE MISSION →'}
           </button>
         )}
       </div>

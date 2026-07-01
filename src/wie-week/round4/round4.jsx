@@ -13,6 +13,21 @@ import pieceImg5 from './assets/piece-6.png';
 import pieceImg6 from './assets/piece-7.png';
 import pieceImg7 from './assets/piece-8.png';
 
+import {
+  ROUND_NAMES,
+  startRoundTimer,
+  endRoundTimer,
+  markRoundComplete,
+  getRoundElapsed,
+  formatSecondsDisplay,
+} from '../../lib/scoringEngine.js';
+import { submitRoundScore } from '../../lib/gameService.js';
+
+const ROUND_NAME = ROUND_NAMES.ROUND4;
+
+// ⚠️ The actual override phrase decoded from the audio clip
+const AUDIO_ANSWER = 'NEBULA';
+
 const PIECE_IMGS = [pieceImg0, pieceImg1, pieceImg2, pieceImg3, pieceImg4, pieceImg5, pieceImg6, pieceImg7];
 const CELL = 68;
 const BOARD_COLS = 6;
@@ -82,7 +97,7 @@ const MAP_W = 4800;
 const MAP_H = 3600;
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function Round4({ onComplete }) {
+export default function Round4({ playerId, sessionId, onComplete }) {
   const [phase, setPhase] = useState('explore');
   const [collected, setCollected] = useState(new Set());
   const [audioCode, setAudioCode] = useState('');
@@ -96,6 +111,10 @@ export default function Round4({ onComplete }) {
   const [placedPieces, setPlacedPieces] = useState(new Set());
   const [piecePos, setPiecePos] = useState({});
   const [dragId, setDragId] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitErr, setSubmitErr] = useState('');
+  const [resultData, setResultData] = useState(null); // { score, timeTaken }
 
   const targetRef = useRef({ x: 50, y: 13 });
   const posRef = useRef({ x: 50, y: 13 });
@@ -107,8 +126,16 @@ export default function Round4({ onComplete }) {
   const boardRef = useRef(null);
   const dragOffset = useRef({ x: 0, y: 0 });
   const dragIdRef = useRef(null);
+  const roundTimerRef = useRef(null);
 
   useEffect(() => { collRef.current = collected; }, [collected]);
+
+  // ── Round scoring timer ───────────────────────────────────────────────────
+  useEffect(() => {
+    startRoundTimer(ROUND_NAME);
+    roundTimerRef.current = setInterval(() => setElapsed(getRoundElapsed(ROUND_NAME)), 1000);
+    return () => clearInterval(roundTimerRef.current);
+  }, []);
 
   // ── Fragment collection check ─────────────────────────────────────────────
   const checkFragments = useCallback((next) => {
@@ -238,7 +265,7 @@ export default function Round4({ onComplete }) {
     if (!inner) return;
     const rect = inner.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / MAP_W) * 100;
-    const y = ((e.clientY - rect.top)  / MAP_H) * 100;
+    const y = ((e.clientY - rect.top) / MAP_H) * 100;
     startMove(x, y);
   }, [phase, startMove]);
 
@@ -339,16 +366,41 @@ export default function Round4({ onComplete }) {
     window.addEventListener('touchend', onUp);
   }, [piecePos]);
 
-  // ── Audio ─────────────────────────────────────────────────────────────────
-  const submitCode = () => {
-    if (audioCode.trim().toUpperCase() === 'NEBULA') {
-      setCodeStatus('ok');
-      setTimeout(() => setPhase('complete'), 1200);
-    } else {
+  // ── Audio / scoring submission ─────────────────────────────────────────────
+  const submitCode = useCallback(async () => {
+    if (submitting) return;
+
+    const passed = audioCode.trim().toUpperCase() === AUDIO_ANSWER.toUpperCase();
+
+    if (!passed) {
       setCodeStatus('err');
       setTimeout(() => setCodeStatus('idle'), 2000);
+      return;
     }
-  };
+
+    const score = 10;
+    setSubmitting(true);
+    setSubmitErr('');
+    try {
+      const timeTaken = endRoundTimer(ROUND_NAME);
+      await submitRoundScore(playerId, sessionId, {
+        score,
+        round: ROUND_NAME,
+        time_taken_secs: timeTaken,
+        role: 'crewmate',
+        survived: true,
+      });
+      markRoundComplete(ROUND_NAME);
+      setResultData({ score, timeTaken });
+      setCodeStatus('ok');
+      setTimeout(() => setPhase('complete'), 1200);
+    } catch (err) {
+      setSubmitErr(err.message ?? 'Submission failed. Try again.');
+      setCodeStatus('idle');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [audioCode, submitting, playerId, sessionId]);
 
   // ══════════════════════════════════════════════════════════════════════════
   return (
@@ -512,16 +564,17 @@ export default function Round4({ onComplete }) {
                         placeholder="ENTER DECODED PHRASE..."
                         value={audioCode}
                         onChange={e => { setAudioCode(e.target.value); setCodeStatus('idle'); }}
-                        onKeyDown={e => e.key === 'Enter' && submitCode()}
+                        onKeyDown={e => e.key === 'Enter' && !submitting && submitCode()}
                         readOnly={codeStatus === 'ok'}
                         autoFocus
                       />
-                      <button className="r4-btn r4-btn--primary" onClick={submitCode} disabled={codeStatus === 'ok'}>
-                        SUBMIT
+                      <button className="r4-btn r4-btn--primary" onClick={submitCode} disabled={codeStatus === 'ok' || submitting}>
+                        {submitting ? 'SUBMITTING…' : 'SUBMIT'}
                       </button>
                     </div>
                     {codeStatus === 'err' && <div className="r4-feedback r4-feedback--err">✗ INCORRECT — TRY AGAIN</div>}
                     {codeStatus === 'ok' && <div className="r4-feedback r4-feedback--ok">✓ DECODED — IMPOSTOR IDENTIFIED</div>}
+                    {submitErr && <div className="r4-feedback r4-feedback--err">{submitErr}</div>}
                   </div>
                 )}
               </div>
@@ -570,15 +623,16 @@ export default function Round4({ onComplete }) {
                 placeholder="ENTER DECODED PHRASE..."
                 value={audioCode}
                 onChange={e => { setAudioCode(e.target.value); setCodeStatus('idle'); }}
-                onKeyDown={e => e.key === 'Enter' && submitCode()}
+                onKeyDown={e => e.key === 'Enter' && !submitting && submitCode()}
                 readOnly={codeStatus === 'ok'}
               />
-              <button className="r4-btn r4-btn--primary" onClick={submitCode} disabled={codeStatus === 'ok'}>
-                SUBMIT
+              <button className="r4-btn r4-btn--primary" onClick={submitCode} disabled={codeStatus === 'ok' || submitting}>
+                {submitting ? 'SUBMITTING…' : 'SUBMIT'}
               </button>
             </div>
             {codeStatus === 'err' && <div className="r4-feedback r4-feedback--err">✗ INCORRECT — LISTEN AGAIN</div>}
             {codeStatus === 'ok' && <div className="r4-feedback r4-feedback--ok">✓ DECODED — IMPOSTOR IDENTIFIED</div>}
+            {submitErr && <div className="r4-feedback r4-feedback--err">{submitErr}</div>}
             <button className="r4-btn r4-btn--ghost" onClick={() => setPhase('puzzle')} style={{ marginTop: 12 }}>
               ← BACK TO PUZZLE
             </button>
@@ -597,10 +651,15 @@ export default function Round4({ onComplete }) {
             </p>
             <div className="r4-stat-row">
               <div className="r4-stat"><div className="r4-stat-lbl">FRAGMENTS</div><div className="r4-stat-val">8 / 8</div></div>
+              <div className="r4-stat"><div className="r4-stat-lbl">TIME</div><div className="r4-stat-val">{formatSecondsDisplay(elapsed)}</div></div>
               <div className="r4-stat"><div className="r4-stat-lbl">STATUS</div><div className="r4-stat-val r4-stat-val--ok">CLEARED</div></div>
             </div>
             {onComplete && (
-              <button className="r4-btn r4-btn--primary" style={{ marginTop: 16 }} onClick={onComplete}>
+              <button
+                className="r4-btn r4-btn--primary"
+                style={{ marginTop: 16 }}
+                onClick={() => onComplete(resultData ?? { score: 10 })}
+              >
                 CONTINUE TO ROUND 5 →
               </button>
             )}

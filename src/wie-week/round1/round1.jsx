@@ -1,11 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRound1Questions } from '../api';
+import { buildRound1Questions } from '../../data/mcqQuestions.js';
 import './round1.css';
 import adminRoom from './assets/admin_roombg.png';
 import crewBlue from './assets/crewmate_blue.png';
 import crewGreen from './assets/crewmate_green.png';
 import crewRed from './assets/crewmate_red.png';
 import crewYellow from './assets/crewmate_yellow.png';
+
+import {
+  ROUND_NAMES,
+  startRoundTimer,
+  endRoundTimer,
+  markRoundComplete,
+  getRoundElapsed,
+} from '../../lib/scoringEngine';
+
+import { submitRoundScore } from '../../lib/gameService';
 
 const CREW = [crewBlue, crewGreen, crewRed, crewYellow];
 
@@ -58,7 +68,7 @@ function KillCooldown({ seconds = 10 }) {
   );
 }
 
-/* ── Navigating overlay — shown on round completion ── */
+/* ── Navigating overlay — kept for potential reuse, no longer auto-triggered ── */
 function NavigatingOverlay({ onDone, label = 'TASK COMPLETE' }) {
   const [count, setCount] = useState(3);
   useEffect(() => {
@@ -89,46 +99,140 @@ function NavigatingOverlay({ onDone, label = 'TASK COMPLETE' }) {
   );
 }
 
-export default function Round1({ onComplete }) {
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function Round1({ playerId, sessionId, onComplete }) {
+  const [questions] = useState(() => buildRound1Questions());
+
   const [cur, setCur] = useState(0);
-  const [sel, setSel] = useState(null);
-  const [answers, setAnswers] = useState({});
 
+  const [attempts, setAttempts] = useState(0);
+  const [score, setScore] = useState(0);
+
+  const [locked, setLocked] = useState(false);
+  const [flash, setFlash] = useState(null);
+
+  const [optState, setOptState] = useState({});
+  const [elapsed, setElapsed] = useState(0);
+
+  const timerRef = useRef(null);
+
+  // Start round timer
   useEffect(() => {
-    getRound1Questions().then(data => {
-      setQuestions(data);
-      setLoading(false);
-    });
-  }, []);
+    startRoundTimer(ROUND_NAMES.ROUND1);
 
-  if (loading) return (
-    <div className="r1-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ fontFamily: 'Orbitron, monospace', color: '#3a8fc7', letterSpacing: '0.2em', fontSize: '0.9rem' }}>LOADING MISSION DATA...</span>
-    </div>
-  );
+    timerRef.current = setInterval(() => {
+      setElapsed(getRoundElapsed(ROUND_NAMES.ROUND1));
+    }, 1000);
+
+    return () => clearInterval(timerRef.current);
+  }, []);
 
   const q = questions[cur];
   const total = questions.length;
-  const done = Object.keys(answers).length;
-  const allAnswered = done >= total && total > 0;
 
-  function pick(i) { setSel(i); }
-  function next() {
-    if (sel === null) return;
-    const updated = { ...answers, [cur]: sel };
-    setAnswers(updated);
-    if (cur < total - 1) { setCur(c => c + 1); setSel(updated[cur + 1] ?? null); }
+  function pick(i) {
+    if (locked || flash) return;
+
+    const correct = i === q.ans;
+
+    if (correct) {
+      setScore(s => s + 1);
+
+      setOptState({
+        [i]: 'correct'
+      });
+
+      setFlash('correct');
+      setLocked(true);
+
+      setTimeout(nextQuestion, 900);
+    } else {
+      const newAttempts = attempts + 1;
+
+      setAttempts(newAttempts);
+
+      setOptState(prev => ({
+        ...prev,
+        [i]: 'wrong'
+      }));
+
+      setFlash('wrong');
+
+      setTimeout(() => {
+        setFlash(null);
+      }, 500);
+
+      if (newAttempts >= 2) {
+        setOptState(prev => ({
+          ...prev,
+          [q.ans]: 'reveal'
+        }));
+
+        setLocked(true);
+
+        setTimeout(nextQuestion, 1200);
+      }
+    }
   }
-  function back() {
-    if (cur === 0) return;
-    setAnswers(p => ({ ...p, [cur]: sel }));
-    setCur(c => c - 1); setSel(answers[cur - 1] ?? null);
+
+  function nextQuestion() {
+    setFlash(null);
+    setOptState({});
+    setAttempts(0);
+    setLocked(false);
+
+    if (cur >= questions.length - 1) {
+      finishRound();
+      return;
+    }
+
+    setCur(c => c + 1);
+  }
+
+  async function finishRound() {
+    clearInterval(timerRef.current);
+
+    const timeTaken = endRoundTimer(ROUND_NAMES.ROUND1);
+
+    try {
+      await submitRoundScore(playerId, sessionId, {
+        round: ROUND_NAMES.ROUND1,
+        score,
+        role: 'crewmate',
+        survived: true,
+        tasks_done: score,
+        time_taken_secs: timeTaken,
+      });
+
+      markRoundComplete(ROUND_NAMES.ROUND1);
+
+      onComplete?.({
+        score,
+        timeTaken,
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
     <>
+      <style>{`
+        .r1-opt--correct {
+          border-color: #22c55e;
+          box-shadow: 0 0 20px rgba(34,197,94,.5);
+        }
+
+        .r1-opt--wrong {
+          border-color: #ef4444;
+          box-shadow: 0 0 20px rgba(239,68,68,.5);
+        }
+
+        .r1-opt--reveal {
+          border-color: #4ade80;
+          box-shadow: 0 0 20px rgba(74,222,128,.35);
+        }
+      `}</style>
+
       <div className="r1-layout">
 
         {/* ══ TOP ROW ══ */}
@@ -261,24 +365,33 @@ export default function Round1({ onComplete }) {
           <div className="r1-center" style={{ backgroundImage: `url(${adminRoom})` }}>
             <div className="r1-quiz">
               <div className="r1-header">
-                <button className="r1-back-btn" onClick={back} disabled={cur === 0}>←</button>
-                <div className="r1-badge">ROUND &nbsp; 1</div>
+                <div className="r1-badge">TASK &nbsp; 1</div>
                 <span className="r1-counter">{cur + 1}|{total}</span>
               </div>
               <div className="r1-qbox">
                 <p className="r1-qtext">Q{cur + 1}. {q.q.toUpperCase()}</p>
+                <div className="r1-attempts">
+                  Attempts: {attempts}/2
+                </div>
               </div>
               <div className="r1-opts">
                 {q.opts.map((opt, i) => (
-                  <button key={i} className={`r1-opt${sel === i ? ' r1-opt--on' : ''}`} onClick={() => pick(i)}>
+                  <button
+                    key={i}
+                    onClick={() => pick(i)}
+                    disabled={locked}
+                    className={`
+                      r1-opt
+                      ${optState[i] === 'correct' ? 'r1-opt--correct' : ''}
+                      ${optState[i] === 'wrong' ? 'r1-opt--wrong' : ''}
+                      ${optState[i] === 'reveal' ? 'r1-opt--reveal' : ''}
+                    `}
+                  >
                     <img src={CREW[i]} alt="" className="r1-crew-icon" />
                     <span className="r1-opt-text">{opt}</span>
                   </button>
                 ))}
               </div>
-              <button className={`r1-next${sel !== null ? ' r1-next--on' : ''}`} onClick={next} disabled={sel === null}>
-                {cur === total - 1 ? 'SUBMIT' : 'NEXT →'}
-              </button>
             </div>
           </div>
 
@@ -351,8 +464,8 @@ export default function Round1({ onComplete }) {
             <div className="r1-guide">
               <div className="r1-ticker-wrap">
                 <div className="r1-ticker">
-                  <span>◈ ROUND 1 OBJECTIVES &nbsp;—&nbsp; Answer all 20 questions to advance to Round 2 &nbsp;▸&nbsp; Use NEXT / ← to navigate freely between questions &nbsp;▸&nbsp; All 20 answers must be submitted before proceeding &nbsp;▸&nbsp; One answer per question — choose wisely, crewmate &nbsp;▸&nbsp;</span>
-                  <span aria-hidden>◈ ROUND 1 OBJECTIVES &nbsp;—&nbsp; Answer all 20 questions to advance to Round 2 &nbsp;▸&nbsp; Use NEXT / ← to navigate freely between questions &nbsp;▸&nbsp; All 20 answers must be submitted before proceeding &nbsp;▸&nbsp; One answer per question — choose wisely, crewmate &nbsp;▸&nbsp;</span>
+                  <span>◈ TASK 1OBJECTIVES &nbsp;—&nbsp; Answer all questions to advance to Round 2 &nbsp;▸&nbsp; You get 2 attempts per question &nbsp;▸&nbsp; Correct answers flash green, wrong flash red &nbsp;▸&nbsp; The round auto-advances — choose wisely, crewmate &nbsp;▸&nbsp;</span>
+                  <span aria-hidden>◈ TASK 1 OBJECTIVES &nbsp;—&nbsp; Answer all questions to advance to Round 2 &nbsp;▸&nbsp; You get 2 attempts per question &nbsp;▸&nbsp; Correct answers flash green, wrong flash red &nbsp;▸&nbsp; The round auto-advances — choose wisely, crewmate &nbsp;▸&nbsp;</span>
                 </div>
               </div>
             </div>
@@ -366,8 +479,6 @@ export default function Round1({ onComplete }) {
 
         </div>
       </div>
-
-      {allAnswered && onComplete && <NavigatingOverlay onDone={onComplete} label="ROUND 1 COMPLETE" />}
     </>
   );
 }
