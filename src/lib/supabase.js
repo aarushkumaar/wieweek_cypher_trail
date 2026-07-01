@@ -7,8 +7,11 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey  = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+console.log("SUPABASE_URL =", JSON.stringify(supabaseUrl));
+console.log("SUPABASE_KEY exists =", !!supabaseKey);
 
 if (!supabaseUrl) {
   throw new Error(
@@ -17,11 +20,5 @@ if (!supabaseUrl) {
   );
 }
 
-if (!supabaseKey) {
-  throw new Error(
-    '[Crewmate Protocol] Missing env var: VITE_SUPABASE_ANON_KEY\n' +
-    'Add it to your .env file at the project root.'
-  );
-}
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
