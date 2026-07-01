@@ -19,6 +19,24 @@ import { submitRoundScore } from '../../lib/gameService';
 
 const CREW = [crewBlue, crewGreen, crewRed, crewYellow];
 
+// Shared "no copy / no select" guard — reused by Round 1 and Round 2.
+// Attach as spread props on the round's outer wrapper div:
+//   <div className="r1-layout" {...noCopyProps}>
+const noCopyStyle = {
+  userSelect: 'none',
+  WebkitUserSelect: 'none',
+  MozUserSelect: 'none',
+  msUserSelect: 'none',
+  WebkitTouchCallout: 'none',
+};
+const noCopyProps = {
+  style: noCopyStyle,
+  onCopy: (e) => e.preventDefault(),
+  onCut: (e) => e.preventDefault(),
+  onSelectCapture: (e) => e.preventDefault(),
+  onDragStart: (e) => e.preventDefault(),
+};
+
 /* ── Starfield ── */
 function Stars({ count = 50 }) {
   const ref = useRef(null);
@@ -233,7 +251,7 @@ export default function Round1({ playerId, sessionId, onComplete }) {
         }
       `}</style>
 
-      <div className="r1-layout">
+      <div className="r1-layout" {...noCopyProps}>
 
         {/* ══ TOP ROW ══ */}
         <div className="r1-row-top">
@@ -365,7 +383,7 @@ export default function Round1({ playerId, sessionId, onComplete }) {
           <div className="r1-center" style={{ backgroundImage: `url(${adminRoom})` }}>
             <div className="r1-quiz">
               <div className="r1-header">
-                <div className="r1-badge">TASK &nbsp; 1</div>
+                <div className="r1-badge">ROUND &nbsp; 1</div>
                 <span className="r1-counter">{cur + 1}|{total}</span>
               </div>
               <div className="r1-qbox">
@@ -464,8 +482,8 @@ export default function Round1({ playerId, sessionId, onComplete }) {
             <div className="r1-guide">
               <div className="r1-ticker-wrap">
                 <div className="r1-ticker">
-                  <span>◈ TASK 1OBJECTIVES &nbsp;—&nbsp; Answer all questions to advance to Round 2 &nbsp;▸&nbsp; You get 2 attempts per question &nbsp;▸&nbsp; Correct answers flash green, wrong flash red &nbsp;▸&nbsp; The round auto-advances — choose wisely, crewmate &nbsp;▸&nbsp;</span>
-                  <span aria-hidden>◈ TASK 1 OBJECTIVES &nbsp;—&nbsp; Answer all questions to advance to Round 2 &nbsp;▸&nbsp; You get 2 attempts per question &nbsp;▸&nbsp; Correct answers flash green, wrong flash red &nbsp;▸&nbsp; The round auto-advances — choose wisely, crewmate &nbsp;▸&nbsp;</span>
+                  <span>◈ ROUND 1 OBJECTIVES &nbsp;—&nbsp; Answer all questions to advance to Round 2 &nbsp;▸&nbsp; You get 2 attempts per question &nbsp;▸&nbsp; Correct answers flash green, wrong flash red &nbsp;▸&nbsp; The round auto-advances — choose wisely, crewmate &nbsp;▸&nbsp;</span>
+                  <span aria-hidden>◈ ROUND 1 OBJECTIVES &nbsp;—&nbsp; Answer all questions to advance to Round 2 &nbsp;▸&nbsp; You get 2 attempts per question &nbsp;▸&nbsp; Correct answers flash green, wrong flash red &nbsp;▸&nbsp; The round auto-advances — choose wisely, crewmate &nbsp;▸&nbsp;</span>
                 </div>
               </div>
             </div>

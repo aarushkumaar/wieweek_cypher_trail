@@ -95,6 +95,23 @@ function CodeLine({ line, num }) {
 const ROUND_NAME = ROUND_NAMES.ROUND2;
 const MODULE_SCORE = 10; // flat score for fully restoring one module + override code
 
+// Shared "no copy / no select" guard — same as Round 1. Attach as spread
+// props on the round's outer wrapper div: <div className="r2-root" {...noCopyProps}>
+const noCopyStyle = {
+  userSelect: 'none',
+  WebkitUserSelect: 'none',
+  MozUserSelect: 'none',
+  msUserSelect: 'none',
+  WebkitTouchCallout: 'none',
+};
+const noCopyProps = {
+  style: noCopyStyle,
+  onCopy: (e) => e.preventDefault(),
+  onCut: (e) => e.preventDefault(),
+  onSelectCapture: (e) => e.preventDefault(),
+  onDragStart: (e) => e.preventDefault(),
+};
+
 export default function Round2({ playerId, sessionId, onComplete }) {
   const [modules] = useState(() => buildRound2Modules());
   const [selectedModule, setSelectedModule] = useState(null);
@@ -190,7 +207,7 @@ export default function Round2({ playerId, sessionId, onComplete }) {
 
   return (
     <>
-      <div className="r2-root">
+      <div className="r2-root" {...noCopyProps}>
 
         {/* ══ MAIN ROW ══ */}
         <div className="r2-main">
@@ -558,7 +575,8 @@ function CodePopup({ mod, onContinue }) {
       background: 'rgba(4,5,15,0.7)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '1rem',
-    }}>
+      overflowY: 'auto',
+    }} {...noCopyProps}>
       <div style={{
         background: 'linear-gradient(140deg, rgba(14,18,40,0.97), rgba(6,8,22,0.98))',
         border: `1px solid ${mod.col}`,
@@ -569,6 +587,7 @@ function CodePopup({ mod, onContinue }) {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', gap: '1.25rem',
         boxShadow: `0 0 60px ${mod.col}33, 0 0 30px rgba(0,0,0,0.6)`,
+        margin: 'auto',
       }}>
         <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: 'clamp(0.5rem,1.5vw,0.8rem)', color: '#39ff14', letterSpacing: '0.3em' }}>MODULE RESTORED</div>
         <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: 'clamp(0.4rem,1.2vw,0.65rem)', color: mod.col, letterSpacing: '0.15em' }}>{mod.lang} — ALL 4 ANOMALIES RESOLVED</div>
@@ -587,6 +606,33 @@ function CodePopup({ mod, onContinue }) {
             Think back over the {code.length} anomalies you just solved for {mod.lang}, and transcribe what you find into the terminal below.
           </div>
         </div>
+
+        {/* Riddle hint — one line per question (Locate / Count / Predict / Diagnostic),
+            each line encodes one digit of the override code. */}
+        {mod.hint && (
+          <div style={{
+            background: `rgba(${mod.rgb},0.07)`,
+            border: `1px solid rgba(${mod.rgb},0.3)`,
+            borderRadius: 10,
+            padding: '14px 20px',
+            textAlign: 'center',
+            width: '100%',
+          }}>
+            <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: '0.45rem', color: mod.col, letterSpacing: '0.15em', marginBottom: 10 }}>
+              💡 CIPHER HINT
+            </div>
+            <div style={{
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontSize: '0.82rem',
+              color: '#d8e6ee',
+              lineHeight: 1.8,
+              fontStyle: 'italic',
+              whiteSpace: 'pre-line',
+            }}>
+              {mod.hint}
+            </div>
+          </div>
+        )}
 
         <div style={{ fontFamily: "'Press Start 2P',monospace", fontSize: '0.45rem', color: '#5ac8e8', letterSpacing: '0.2em' }}>
           ENTER OVERRIDE CODE

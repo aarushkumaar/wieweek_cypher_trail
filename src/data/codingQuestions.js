@@ -15,10 +15,16 @@
  * that system and complete the round (same reveal → re-enter pattern as
  * Round 3's hidden key).
  *
+ * Each module also carries a `hint` — a short riddle whose four lines map
+ * (in order) to the Locate / Count / Predict / Diagnostic answers, i.e. the
+ * digits of `overrideCode`. It's shown inside the override-code popup once
+ * the module is fully solved, as a nudge for anyone who forgot to note
+ * their answers down.
+ *
  * ⚠️ NOTE: The C++ "Count" module's code snippet (below) is Python, not
  * C++ — this is preserved exactly as supplied. The question text references
- * a "constructor," which the snippet doesn't have. Worth fixing with real
- * C++ code before this goes live.
+ * "runtime/logic constraints," which doesn't perfectly match C++ syntax.
+ * Worth fixing with real C++ code before this goes live.
  */
 
 function codeLines(raw) {
@@ -41,23 +47,31 @@ const C_MODULE = {
     col: '#ffaa00',
     rgb: '255,170,0',
     icon: '🔩',
-    overrideCode: '6142',
+    overrideCode: '6242',
+    hint:
+        'The quiet one opens the door.\n' +
+        'The complete one guards the center.\n' +
+        'The mighty follows.\n' +
+        'The silent twin remains until the end.',
     questions: [
         {
             type: 'locate',
             title: '📍 LOCATE THE ANOMALY',
             answerLabel: 'ENTER THE LINE NUMBER',
             prompt:
-                'Enter the line number that invokes critical undefined behavior by breaking memory management rules regarding stack-allocated variables.',
+                'Enter the line number containing the critical memory-management violation.',
             lines: codeLines(`
 1: #include <stdio.h>
-2: int main() {
-3:     int array[4] = {10, 20, 30, 40};
-4:     int *ptr = array;
-5:     printf("%d", *(ptr + 1));
+2: #include <stdlib.h>
+3:
+4: int main(){
+5:     int *ptr = malloc(4 * sizeof(int));
 6:     free(ptr);
-7:     return 0;
-8: }
+7:     for(int i = 0; i < 4; i++)
+8:         ptr[i] = i * 10;
+9:     printf("Diagnostics Complete\\n");
+10:    return 0;
+11: }
       `),
             answer: '6',
         },
@@ -65,20 +79,23 @@ const C_MODULE = {
             type: 'count',
             title: '🧩 COUNT THE ANOMALIES',
             answerLabel: 'HOW MANY ANOMALIES?',
-            prompt: 'How many lines contain the destructive memory violation?',
+            prompt: 'How many lines directly contribute to the unsafe memory operation?',
             lines: codeLines(`
 1: #include <stdio.h>
-2: struct Pack {
-3:     int id;
-4:     char flag;
-5:     long long timestamp;
-6: } __attribute__((packed));
-7:
-8: void process() {
-9:     struct Pack p;
-10:    int *ptr = (int*)&p.flag;
-11:    *ptr = 0xFFFFFFFF;
-12: }
+2:
+3: struct Pack{
+4:     int id;
+5:     char flag;
+6:     long long timestamp;
+7: } __attribute__((packed));
+8:
+9: void process(){
+10:    struct Pack p;
+11:    p.id=101;
+12:    int *ptr=(int*)&p.flag;
+13:    *ptr=0xFFFFFFFF;
+14:    printf("Processed\\n");
+15: }
       `),
             answer: '2',
         },
@@ -86,20 +103,25 @@ const C_MODULE = {
             type: 'predict',
             title: '⚡ PREDICT THE EXECUTION',
             answerLabel: 'WHAT IS THE OUTPUT?',
-            prompt:
-                'Due to implicit balancing conversion rules (Usual Arithmetic Conversions), signed operands are promoted to unsigned during mixed operations. What numeric value is printed?',
+            prompt: 'What digit is printed?',
             lines: codeLines(`
 1: #include <stdio.h>
-2: int main() {
-3:     unsigned int limit = 0;
-4:     int counter = -1;
-5:     if (counter > limit) {
-6:         printf("%d", 4);
-7:     } else {
-8:         printf("%d", 9);
-9:     }
-10:    return 0;
-11: }
+2:
+3: int main(){
+4:     unsigned int limit=0;
+5:     int counter=-1;
+6:
+7:     printf("Checking...\\n");
+8:
+9:     if(counter>limit){
+10:        printf("%d",4);
+11:    }
+12:    else{
+13:        printf("%d",9);
+14:    }
+15:
+16:    return 0;
+17: }
       `),
             answer: '4',
         },
@@ -107,17 +129,22 @@ const C_MODULE = {
             type: 'diagnostic',
             title: '🔐 FINAL DIAGNOSTIC',
             answerLabel: 'WHAT IS THE FINAL VALUE?',
-            prompt:
-                'Calculate the complete sequence of bitwise shifts according to strict operator precedence (left-to-right evaluation for identical precedence groups). What is the exact final value?',
+            prompt: 'What is the final value printed?',
             lines: codeLines(`
 1: #include <stdio.h>
-2: int main() {
-3:     int alpha = 5;
-4:     int beta = 2;
-5:     int result = alpha >> beta << 1;
-6:     printf("%d", result);
-7:     return 0;
-8: }
+2:
+3: int main(){
+4:     int alpha=5;
+5:     int beta=2;
+6:
+7:     printf("Shift Diagnostic\\n");
+8:
+9:     int result=alpha>>beta<<1;
+10:
+11:    printf("%d",result);
+12:
+13:    return 0;
+14: }
       `),
             answer: '2',
         },
@@ -132,21 +159,32 @@ const CPP_MODULE = {
     rgb: '90,200,232',
     icon: '🧩',
     overrideCode: '6248',
+    hint:
+        'Perfection opens the way.\n' +
+        'Humility walks beside it.\n' +
+        'Growth follows naturally.\n' +
+        'The greatest closes the gate.',
     questions: [
         {
             type: 'locate',
             title: '📍 LOCATE THE ANOMALY',
             answerLabel: 'ENTER THE LINE NUMBER',
-            prompt: 'Enter the line number containing a critical logic bug.',
+            prompt: 'Enter the line number containing the critical logic bug.',
             lines: codeLines(`
 1: #include <iostream>
-2: struct Base { virtual void log() {} };
-3: struct Derived : public Base { void log() override {} };
-4: int main() {
-5:     Base* b = new Base();
-6:     Derived* d = static_cast<Derived*>(b);
-7:     d->log();
-8: }
+2: using namespace std;
+3: struct Base { virtual void log() {} };
+4: struct Derived : public Base { void log() override {} };
+5: int main() {
+6:     Base* b = new Base();
+7:     Derived* d = dynamic_cast<Derived*>(b);
+8:     if (d) d->log();
+9:     cout << "Diagnostics Complete\\n";
+10:    int status = 1;
+11:    if(status) cout << "Module Verified\\n";
+12:    delete b;
+13:    return 0;
+14: }
       `),
             answer: '6',
         },
@@ -154,14 +192,23 @@ const CPP_MODULE = {
             type: 'count',
             title: '🧩 COUNT THE ANOMALIES',
             answerLabel: 'HOW MANY ANOMALIES?',
-            prompt: 'How many initialization/compilation constraints are broken in this constructor layout?',
+            prompt: 'How many independent runtime/logic constraints are broken in this implementation?',
             lines: codeLines(`
 1: values = [10, 20, 30]
 2: for i in range(len(values)+1):
 3:     if values[i] % 2 == 0:
 4:         values.remove(values[i])
 5:
-6: print(values)
+6: removed = len(values)
+7: print("Remaining:", values)
+8: print("Items Left:", removed)
+9:
+10: if removed > 0:
+11:     print("Scan Complete")
+12: else:
+13:     print("Empty")
+14:
+15: print("End")
       `),
             answer: '2',
         },
@@ -170,14 +217,21 @@ const CPP_MODULE = {
             title: '⚡ PREDICT THE EXECUTION',
             answerLabel: 'WHAT IS THE OUTPUT?',
             prompt:
-                'In C++, shifting a signed 32-bit integer beyond its width minus one or shifting a negative value induces an undefined execution state. If optimized out under strict modern standards, what sequence fallback value is output on line 5?',
+                'In C++, shifting a signed 32-bit integer beyond its width minus one may invoke undefined behavior. If the compiler optimizes away the undefined computation, what value is ultimately printed?',
             lines: codeLines(`
 1: #include <iostream>
-2: int main() {
-3:     int x = 1;
-4:     int y = x << 31;
-5:     std::cout << 4;
-6: }
+2: using namespace std;
+3: int main() {
+4:     int x = 1;
+5:     int y = x << 31;
+6:     int z = y;
+7:     if(z == 0)
+8:         cout << "";
+9:     else
+10:        cout << "";
+11:    cout << 4;
+12:    return 0;
+13: }
       `),
             answer: '4',
         },
@@ -193,9 +247,15 @@ const CPP_MODULE = {
 4: }
 5: int main(){
 6:     int a = 5;
-7:     get(a) += 3;
-8:     std::cout << a;
-9: }
+7:     int backup = a;
+8:     get(a) += 3;
+9:     std::cout << a;
+10:    backup = a;
+11:    if(backup > 0){
+12:        std::cout << "";
+13:    }
+14:    return 0;
+15: }
       `),
             answer: '8',
         },
@@ -210,6 +270,11 @@ const JAVA_MODULE = {
     rgb: '255,80,80',
     icon: '☕',
     overrideCode: '5123',
+    hint:
+        'The pair opens the gate.\n' +
+        'The hand follows.\n' +
+        'Return to the source.\n' +
+        'The triangle seals the lock.',
     questions: [
         {
             type: 'locate',
@@ -225,7 +290,13 @@ const JAVA_MODULE = {
 5:             counter++;
 6:         }
 7:     }
-8: }
+8:     public int getCounter() {
+9:         return this.counter;
+10:    }
+11:    public void reset() {
+12:        this.counter = 0;
+13:    }
+14: }
       `),
             answer: '5',
         },
@@ -240,7 +311,16 @@ const JAVA_MODULE = {
 3:     public GenericArray() {
 4:         data = new T[10];
 5:     }
-6: }
+6:     public T get(int index) {
+7:         return data[index];
+8:     }
+9:     public void set(int index, T item) {
+10:        data[index] = item;
+11:    }
+12:    public int size() {
+13:        return 10;
+14:    }
+15: }
       `),
             answer: '1',
         },
@@ -276,11 +356,17 @@ const JAVA_MODULE = {
             lines: codeLines(`
 1: public class BitCalc {
 2:     public static void main(String[] args) {
-3:         int mask = -1; // All bits 1
+3:         int mask = -1;
 4:         int shift = mask >>> 30;
 5:         System.out.println(shift);
 6:     }
-7: }
+7:     public static int getVersion() {
+8:         return 1;
+9:     }
+10:    public static int getRevision() {
+11:        return 0;
+12:    }
+13: }
       `),
             answer: '3',
         },
@@ -294,69 +380,100 @@ const PYTHON_MODULE = {
     col: '#39ff14',
     rgb: '57,255,20',
     icon: '🐍',
-    overrideCode: '5012',
+    overrideCode: '4159',
+    hint:
+        'The tallest stands guard at the entrance.\n' +
+        'The only number born from equal twins follows.\n' +
+        'The beginning of all counting comes next.\n' +
+        'The final traveler completes the path.',
     questions: [
         {
             type: 'locate',
             title: '📍 LOCATE THE ANOMALY',
             answerLabel: 'ENTER THE LINE NUMBER',
             prompt:
-                'Modifying a collection while actively iterating over it directly skips evaluation markers due to internal pointer shifting. Enter the line number where this architectural structural bug occurs.',
+                "Modifying a list's size while iterating directly over it shifts the internal index pointers, causing the loop to skip the very next item. Enter the line number where this structural mutation bug occurs.",
             lines: codeLines(`
-1: def process_nodes():
-2:     cache = [1, 2, 3, 4, 5]
-3:     for item in cache:
-4:         if item % 2 == 0:
-5:             cache.remove(item)
-6:     print(len(cache))
+1:  def remove_bad_items(items):
+2:      for number in items:
+3:          if number < 5:
+4:              items.remove(number)
+5:
+6:      final_count = len(items)
+7:      return final_count
+8:
+9:  data = [1, 2, 3, 4, 5, 6]
+10: result = remove_bad_items(data)
+11: print(result)
       `),
-            answer: '5',
+            answer: '4',
         },
         {
             type: 'count',
             title: '🧩 COUNT THE ANOMALIES',
             answerLabel: 'HOW MANY ANOMALIES?',
-            prompt: 'How many exceptions/unbound local variable errors will be thrown by the python interpreter stack if this module runs?',
+            prompt: 'How many exceptions (UnboundLocalError) will be thrown by the Python interpreter stack if this module runs?',
             lines: codeLines(`
-1: def load_configs():
-2:     global calculation
-3:     print(calculation)
-4:     calculation = 20
-5:
-6: calculation = 10
-7: load_configs()
+1:  def run_counter():
+2:      total = 10
+3:
+4:      def add_to_total():
+5:          print(total)
+6:          total = 20
+7:
+8:      add_to_total()
+9:      return total
+10:
+11: final_value = run_counter()
+12: print(final_value)
       `),
-            answer: '0',
+            answer: '1',
         },
         {
             type: 'predict',
             title: '⚡ PREDICT THE EXECUTION',
             answerLabel: 'WHAT IS THE OUTPUT?',
             prompt:
-                'In Python, bool subclasses int. Given calculation order rules, calculate the numerical return printed to the standard console block.',
+                'Given how Python copies references using * versus creating independent objects, predict the numerical integer value printed to the console.',
             lines: codeLines(`
-1: def evaluate_bools():
-2:     output = True + True * False
-3:     print(output)
+1:  def calculate_points():
+2:      grid_a = [[0]] * 3
+3:      grid_b = [[0], [0], [0]]
 4:
-5: evaluate_bools()
+5:      grid_a[0][0] = 5
+6:      grid_b[0][0] = 5
+7:
+8:      score_a = grid_a[2][0]
+9:      score_b = grid_b[2][0]
+10:
+11:     final_score = score_a + score_b
+12:     print(final_score)
+13:
+14: calculate_points()
       `),
-            answer: '1',
+            answer: '5',
         },
         {
             type: 'diagnostic',
             title: '🔐 FINAL DIAGNOSTIC',
             answerLabel: 'WHAT IS THE FINAL VALUE?',
-            prompt: 'What value is printed?',
+            prompt: 'What value is printed to the standard console block at the conclusion of this routine?',
             lines: codeLines(`
-1: values = ([1],)
-2: try:
-3:     values[0] += [2]
-4: except TypeError:
-5:     pass
-6: print(len(values[0]))
+1:  def update_record():
+2:      user_data = ([10], [20])
+3:
+4:      try:
+5:          user_data[0] += [9]
+6:      except TypeError:
+7:          pass
+8:
+9:      result = user_data[0][1]
+10:     print(result)
+11:     return result
+12:
+13: update_record()
       `),
-            answer: '2',
+            answer: '9',
         },
     ],
 };
