@@ -47,7 +47,7 @@ const C_MODULE = {
     col: '#ffaa00',
     rgb: '255,170,0',
     icon: '🔩',
-    overrideCode: '6242',
+    overrideCode: '2462',
     hint:
         'The quiet one opens the door.\n' +
         'The complete one guards the center.\n' +
@@ -158,7 +158,7 @@ const CPP_MODULE = {
     col: '#5ac8e8',
     rgb: '90,200,232',
     icon: '🧩',
-    overrideCode: '6248',
+    overrideCode: '4268',
     hint:
         'Perfection opens the way.\n' +
         'Humility walks beside it.\n' +
@@ -380,7 +380,7 @@ const PYTHON_MODULE = {
     col: '#39ff14',
     rgb: '57,255,20',
     icon: '🐍',
-    overrideCode: '4159',
+    overrideCode: '9145',
     hint:
         'The tallest stands guard at the entrance.\n' +
         'The only number born from equal twins follows.\n' +
