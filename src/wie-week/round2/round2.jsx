@@ -570,13 +570,20 @@ function CodePopup({ mod, onContinue }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 99999,
-      background: 'rgba(4,5,15,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '1rem',
-      overflowY: 'auto',
-    }} {...noCopyProps}>
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 99999,
+        background: 'rgba(4,5,15,0.7)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1rem',
+        overflowY: 'auto',
+        ...noCopyStyle,
+      }}
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      onSelectCapture={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
+    >
       <div style={{
         background: 'linear-gradient(140deg, rgba(14,18,40,0.97), rgba(6,8,22,0.98))',
         border: `1px solid ${mod.col}`,

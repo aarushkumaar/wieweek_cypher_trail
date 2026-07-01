@@ -130,6 +130,11 @@ const INSTRUCTIONS = [
   { num: '05', text: 'Follow the narrative, trust your instincts, and survive the mission long enough to uncover the truth at the end.' },
 ];
 
+/* Sponsor logos duplicated once so the marquee track can loop seamlessly
+   (animating the first half's width leaves the second half in the exact
+   spot the first half started, with no visible seam or reset). */
+const CAROUSEL_SPONSORS = [...SPONSORS, ...SPONSORS];
+
 /* helpers removed: scrollTo and useRevealOnScroll were unused and caused linter warnings */
 
 /* ── Main Component ── */
@@ -174,15 +179,48 @@ export default function LandingPage({ onStart }) {
       {/* ══ MISSION PARTNERS ══ */}
       <section className="lp-section partners-section" id="mission-partners"
         style={{ backgroundImage: `url(${mpBg})` }}>
+        {/* Scoped carousel styles — self-contained here so this section works
+            even before LandingPage.css is updated with matching classes. */}
+        <style>{`
+          .partners-carousel {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+          }
+          .partners-track {
+            display: flex;
+            align-items: center;
+            width: max-content;
+            gap: clamp(2rem, 6vw, 4.5rem);
+            animation: partners-scroll 22s linear infinite;
+          }
+          .partners-carousel:hover .partners-track {
+            animation-play-state: paused;
+          }
+          .partners-track .partner-card {
+            flex: 0 0 auto;
+          }
+          @keyframes partners-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .partners-track { animation: none; }
+          }
+        `}</style>
         <div className="lp-inner">
           <h2 className="section-title">Mission Partners <span aria-hidden="true">🧑‍🚀</span></h2>
-          <div className="partners-grid">
-            {SPONSORS.map(sponsor => (
-              <div key={sponsor.id} className="partner-card">
-                <img src={sponsor.src} alt={sponsor.alt} className="partner-logo" />
-                <span className="partner-name">{sponsor.name}</span>
-              </div>
-            ))}
+          <div className="partners-carousel">
+            <div className="partners-track">
+              {CAROUSEL_SPONSORS.map((sponsor, i) => (
+                <div key={`${sponsor.id}-${i}`} className="partner-card">
+                  <img src={sponsor.src} alt={sponsor.alt} className="partner-logo" />
+                  <span className="partner-name">{sponsor.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
